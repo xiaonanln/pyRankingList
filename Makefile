@@ -1,5 +1,11 @@
+PYFILES = errors.py __init__.py
+
 all:
-	python setup.py build_ext --inplace && cp pyRankingList/*.so ./
+	python setup.py build_ext --inplace
+	cp $(PYFILES) pyRankingList/
+
+test: all
+	python test.py
 
 clean:
 	rm -rf build

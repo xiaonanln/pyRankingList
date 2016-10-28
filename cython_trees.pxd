@@ -7,6 +7,8 @@ cdef class TreeNode:
 	cpdef bint moveSucc(self)
 	cpdef bint movePrev(self)
 	cpdef void remove(self)
+	cpdef TreeNode getSuccNode(self)
+	cpdef TreeNode getPrevNode(self)
 
 cdef class BinaryTree:
 	cdef node_t *root

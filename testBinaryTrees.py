@@ -5,7 +5,7 @@ import time
 import cProfile
 import os
 
-from cython_trees import BinaryTree, RBTree
+from pyRankingList.cython_trees import BinaryTree, RBTree
 
 class BinaryTreeTest(unittest.TestCase):
 	def __init__(self, *args):

@@ -85,11 +85,14 @@ cdef class RBTree(BinaryTree):
 _nullTreeNodeError = InternalError('TreeNode is null')
 
 cdef class TreeNode:
-
-	def __cinit__(self, BinaryTree tree, _node):
+	
+	def __cinit__(self, BinaryTree tree, long _node):
 		self.owner = tree
-		cdef node_t *node = <node_t *><long>_node;
+		cdef node_t *node = <node_t *>_node;
 		self.node = node
+
+	def __nonzero__(self):
+		return self.node != NULL
 
 	property value:
 		def __get__(self):
@@ -112,6 +115,26 @@ cdef class TreeNode:
 				return (<object>node.key, <object>node.value)
 			else:
 				raise _nullTreeNodeError
+
+	cpdef TreeNode getSuccNode(self):
+		if self.node == NULL:
+			raise _nullTreeNodeError
+
+		cdef node_t *node = ct_succ_node(self.owner.root, self.node)
+		if node != NULL:
+			return TreeNode(self.owner, <long>node)
+		else:
+			return None
+
+	cpdef TreeNode getPrevNode(self):
+		if self.node == NULL:
+			raise _nullTreeNodeError
+
+		cdef node_t *node = ct_prev_node(self.owner.root, self.node)
+		if node == NULL:
+			return TreeNode(self.owner, <long>node)
+		else:
+			return None
 
 	cpdef bint moveSucc(self):
 		if self.node == NULL:
