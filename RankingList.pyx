@@ -25,11 +25,28 @@ cdef class RankingList:
 		cdef tuple key = (score, seq)
 		cdef tuple val = (uid, info)
 		
-		cdef TreeNode minItem, nextMinItem
+		cdef TreeNode oldNode, minItem, nextMinItem, succNode, prevNode
 
 		cdef tuple oldKey = self.uid2TreeKey.get(uid)
+		cdef bint rankNotChanged = 0
 
-		if oldKey is None:
+		if oldKey is not None:
+			# uid already in rank, just update it
+			# goes here in most cases
+			oldNode = self.tree.findNode(oldKey)
+			succNode = oldNode.getSuccNode()
+			prevNode = oldNode.getPrevNode()
+
+			oldNode.remove()
+			assert succNode is None or succNode.key[0] >= oldKey[0]
+			assert prevNode is None or prevNode.key[0] <= oldKey[0]
+
+			self.tree.insert( key,  val )
+
+			if key < self.minKey: self.minKey = key
+
+			rankNotChanged = (prevNode is None or prevNode.key[0] < score) and (succNode is None or succNode.key[0] >= score)
+		else:
 			# uid not in rank
 			if self.full():
 				if key < self.minKey:
@@ -53,16 +70,12 @@ cdef class RankingList:
 				self.tree.insert( key,  val )
 				self.size += 1
 				if key < self.minKey: self.minKey = key
-		else:
-			# uid already in rank, just update it
-			self.tree.findNode(oldKey).remove()
-			self.tree.insert( key,  val )
-
-			if key < self.minKey: self.minKey = key
 
 		self.uid2TreeKey[uid] = key
 
-		self.outdateRankMap()
+		if not rankNotChanged:
+			self.outdateRankMap()
+
 
 	cpdef bint full(self):
 		return self.limit != -1 and self.size >= self.limit

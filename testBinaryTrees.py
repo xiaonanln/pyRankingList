@@ -20,16 +20,16 @@ class BinaryTreeTest(unittest.TestCase):
 	def testLen(self):
 		bt = BinaryTree()
 		N = 1000
-		expectedLen = 0
+		expectedLen = set()
 		for i in xrange(N):
 			n = random.randint(1, N//100)
 			try:
 				bt.insert(n, i)
-				expectedLen += 1
+				expectedLen.add(n)
 			except KeyError:
 				pass
 
-			self.assertEqual(len(bt), expectedLen)
+			self.assertEqual(len(bt), len(expectedLen))
 
 		for i in xrange(N):
 			n = random.randint(1, N//100)
@@ -37,12 +37,12 @@ class BinaryTreeTest(unittest.TestCase):
 				# print 'remove',n
 				node = bt.findNode(n)
 				bt.removeNode( node)
-				expectedLen -= 1
+				expectedLen.remove(n)
 
 			except KeyError:
 				pass
 
-			self.assertEqual(len(bt), expectedLen)
+			self.assertEqual(len(bt), len(expectedLen))
 
 	def testInsert(self):
 		bt = BinaryTree()
@@ -52,25 +52,25 @@ class BinaryTreeTest(unittest.TestCase):
 
 	def testRemove(self):
 		N = 1000
-		keys = []
+		keys = set()
 		bt = BinaryTree()
 		for i in xrange(N):
 			key = random.randint(1, N * 100)
 
-			try:
-				bt.insert(key, key)
-				keys.append(key)
-			except KeyError:
-				continue 
+			bt.insert(key, key)
+			keys.add(key)
 
 		self.assertEqual(len(keys), len(bt))
-		while keys:
-			i = random.randint(0, len(keys)-1)
-			key = keys[i]
-			keys[i:i+1] = []
+
+		keysCopy = list(keys)
+		random.shuffle(keysCopy)
+		for key in keysCopy:
+
+			keys.remove(key)
 
 			node = bt.findNode(key)
 			bt.removeNode(node)
+			
 			self.assertEqual(len(bt), len(keys))
 			bt.validate()
 

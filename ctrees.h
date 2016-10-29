@@ -23,7 +23,7 @@ PyObject *ct_get_value(node_t *node);
 void ct_delete_tree(node_t *root);
 node_t *ct_find_node(node_t *root, PyObject *key);
 
-int ct_bintree_insert(node_t **root, PyObject *key, PyObject *value);
+node_t *ct_bintree_insert(node_t **root, PyObject *key, PyObject *value, int *is_new_node);
 void ct_bintree_remove(node_t **root, node_t *node);
 
 node_t *ct_min_node(node_t *root);
@@ -36,7 +36,7 @@ node_t *ct_prev_node(node_t *root, node_t *node);
 int ct_validate(node_t *root);
 
 
-int rb_insert(node_t **root, PyObject *key, PyObject *value);
+node_t *rb_insert(node_t **root, PyObject *key, PyObject *value, int *is_new_node);
 int rb_remove(node_t **rootaddr, node_t *node); 
 
 void ct_bintree_keys(node_t *root, PyObject *list); 

@@ -14,7 +14,7 @@ cdef class BinaryTree:
 	cdef node_t *root
 	cdef readonly size_t len
 
-	cpdef void insert(self, object key, object value) except *
+	cpdef TreeNode insert(self, object key, object value)
 	cpdef removeNode(self, TreeNode node)
 	cpdef TreeNode findNode(self, object key)
 	cpdef TreeNode findMinNode(self)

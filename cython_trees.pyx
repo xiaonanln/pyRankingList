@@ -12,14 +12,17 @@ cdef class BinaryTree:
 	def __dealloc__(self):
 		ct_delete_tree(self.root)
 
-	cpdef void insert(self, object key, object value) except *:
-		cdef int ret = ct_bintree_insert(&self.root, key, value)
-		if ret < 0:
-			raise MemoryError()
-		elif ret == 0:
-			raise KeyError(key)
+	cpdef TreeNode insert(self, object key, object value):
+		cdef int is_new_node = 0
+		cdef node_t *node = ct_bintree_insert(&self.root, key, value, &is_new_node)
 
-		self.len += 1
+		if node == NULL:
+			raise MemoryError()
+
+		if is_new_node:
+			self.len += 1
+
+		return TreeNode(self, <long>node)
 
 	# cpdef remove(self, object key):
 	# 	cdef node_t *node = ct_find_node(self.root, key)
@@ -68,14 +71,16 @@ cdef class BinaryTree:
 		return a
 
 cdef class RBTree(BinaryTree):
-	cpdef void insert(self, object key, object value) except *:
-		cdef int ret = rb_insert(&self.root, key, value)
-		if ret == -1:
+	cpdef TreeNode insert(self, object key, object value):
+		cdef int is_new_node;
+		cdef node_t *node = rb_insert(&self.root, key, value, &is_new_node)
+		if node == NULL:
 			raise MemoryError()
-		elif ret == 0:
-			raise KeyError(key)
 
-		self.len += 1
+		if is_new_node:
+			self.len += 1
+
+		return TreeNode(self, <long>node)
 
 	cpdef removeNode(self, TreeNode node):
 		rb_remove(&self.root,  node.node)
@@ -131,7 +136,7 @@ cdef class TreeNode:
 			raise _nullTreeNodeError
 
 		cdef node_t *node = ct_prev_node(self.owner.root, self.node)
-		if node == NULL:
+		if node != NULL:
 			return TreeNode(self.owner, <long>node)
 		else:
 			return None

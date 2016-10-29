@@ -12,7 +12,7 @@ cdef extern from "ctrees.h":
 
 	node_t *ct_find_node(node_t *root, object key);
 
-	int ct_bintree_insert(node_t **root, object key, object value)
+	node_t *ct_bintree_insert(node_t **root, object key, object value, int *is_new_node)
 	void ct_bintree_remove(node_t **root, node_t *node)
 
 
@@ -24,7 +24,7 @@ cdef extern from "ctrees.h":
 	int ct_validate(node_t *root)
 
 
-	int rb_insert(node_t **root, object key, object value);
+	node_t *rb_insert(node_t **root, object key, object value, int *is_new_node);
 	int rb_remove(node_t **rootaddr, node_t *node); 
 	
 	void ct_bintree_keys(node_t *root, object list); 

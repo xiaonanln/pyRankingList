@@ -88,8 +88,8 @@ ct_find_node(node_t *root, PyObject *key)
 	return NULL;
 }
 
-int
-ct_bintree_insert(node_t **rootaddr, PyObject *key, PyObject *value)
+node_t *
+ct_bintree_insert(node_t **rootaddr, PyObject *key, PyObject *value, int *is_new_node)
 {
 	int cval;
 	node_t *parent = NULL;
@@ -98,9 +98,10 @@ ct_bintree_insert(node_t **rootaddr, PyObject *key, PyObject *value)
 		node_t *root = *rootaddr;
 		if (root == NULL) {
 			node_t *node = ct_new_node(parent, key, value, 0);
-			if (node == NULL) return -1;
+			if (node == NULL) return NULL;
 			*rootaddr = node;
-			return 1;
+			*is_new_node = 1;
+			return node;
 		}
 
 		cval = ct_compare(key, KEY(root));
@@ -110,11 +111,12 @@ ct_bintree_insert(node_t **rootaddr, PyObject *key, PyObject *value)
 		} else if (cval > 0) {
 			rootaddr = &RIGHT_NODE(root);
 		} else {
-			/* key exists, replace value object? no! */
-			// Py_XDECREF(VALUE(root)); /* release old value object */
-			// VALUE(root) = value;     /* set new value object     */
-			// Py_INCREF(value);     /* take new value object    */
-			return 0; 
+			/* key exists, replace value object */
+			Py_XDECREF(VALUE(root)); /* release old value object */
+			VALUE(root) = value;     /* set new value object     */
+			Py_INCREF(value);     /* take new value object    */
+			*is_new_node = 0;
+			return root;
 		}
 		parent = root;
 	}
@@ -337,10 +339,11 @@ rb_double(node_t *root, int dir)
 
 #define rb_new_node(parent, key, value) ct_new_node(parent, key, value, 1)
 
-extern int
-rb_insert(node_t **rootaddr, PyObject *key, PyObject *value)
+extern node_t *
+rb_insert(node_t **rootaddr, PyObject *key, PyObject *value, int *is_new_node)
 {
     int new_node = 0;
+    node_t *res;
 	node_t *root = *rootaddr;
 
 	if (root == NULL) {
@@ -348,7 +351,7 @@ rb_insert(node_t **rootaddr, PyObject *key, PyObject *value)
 		root = rb_new_node(NULL, key, value);
 		new_node = 1;
 		if (root == NULL)
-			return -1; // got no memory
+			return NULL; // got no memory
 	}
 	else {
 		node_t head; /* False tree root */
@@ -374,7 +377,8 @@ rb_insert(node_t **rootaddr, PyObject *key, PyObject *value)
 				new_node = 1;
 				p->link[dir] = q;
 				if (q == NULL)
-					return -1; // get no memory
+					return NULL; // get no memory
+				res = q; 
 			}
 			else if (is_red(q->link[0]) && is_red(q->link[1])) {
 				/* Simple red violation: color flip */
@@ -402,9 +406,10 @@ rb_insert(node_t **rootaddr, PyObject *key, PyObject *value)
 
 			cmp_res = ct_compare(KEY(q), key);
 			if (cmp_res == 0) {       /* if key exists            */
-				// Py_XDECREF(VALUE(q)); /* release old value object */
-				// VALUE(q) = value;      set new value object     
-				// Py_INCREF(value);     /* take new value object    */
+				Py_XDECREF(VALUE(q)); /* release old value object */
+				VALUE(q) = value;     /* set new value object     */
+				Py_INCREF(value);     /* take new value object    */
+				res = q; 
 				break;
 			}
 			last = dir;
@@ -426,7 +431,8 @@ rb_insert(node_t **rootaddr, PyObject *key, PyObject *value)
 	RED(root) = 0;
 	(*rootaddr) = root;
 	PARENT_NODE(root) = NULL; 
-	return new_node;
+	*is_new_node = new_node;
+	return res; 
 }
 
 extern int
