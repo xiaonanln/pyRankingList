@@ -11,6 +11,7 @@ cdef class RankingList:
 	cdef dict uid2TreeKey
 	cdef tuple minKey
 	cdef readonly int size
+	cdef readonly int rankMapHit, rankMapMiss
 
 	def __cinit__(self, int limit=-1):
 		self.seq = 0
@@ -22,6 +23,7 @@ cdef class RankingList:
 		self.minKey = None
 
 	cpdef void update(self, object uid, object score, object info) except *:
+		# print 'update', uid, score, self.size
 		cdef int seq = self.getNextSeq()
 		cdef tuple key = (score, seq)
 		cdef tuple val = (uid, info)
@@ -44,20 +46,25 @@ cdef class RankingList:
 
 			self.tree.insert( key,  val )
 
-			if key < self.minKey: self.minKey = key
+			if self.minKey is None or key < self.minKey: self.minKey = key
 
 			rankNotChanged = (prevNode is None or prevNode.key[0] < score) and (succNode is None or succNode.key[0] >= score)
 		else:
 			# uid not in rank
 			if self.full():
-				if key < self.minKey:
-					# this update won't change the ranking, at all
-					return 
+				#if key < self.minKey:
+				#	# this update won't change the ranking, at all
+				#	return 
 
 				# ranking is full, need to remove the item with smallest score
 				minItem = self.tree.findMinNode()
-				assert minItem.key == self.minKey, "min key in tree (%s) should be equal to minKey (%s)" % (minItem.key, self.minKey)
+				if key < minItem.key:
+					return 
+
+				# assert minItem.key == self.minKey, "min key in tree (%s) should be equal to minKey (%s)" % (minItem.key, self.minKey)
 				nextMinItem = minItem.getSuccNode()
+				
+				del self.uid2TreeKey[minItem.value[0]]
 				minItem.remove()
 				self.tree.insert(key,  val)
 
@@ -70,12 +77,15 @@ cdef class RankingList:
 				# rank is not full, simply insert the new item
 				self.tree.insert( key,  val )
 				self.size += 1
-				if key < self.minKey: self.minKey = key
+				if self.minKey is None or key < self.minKey: self.minKey = key
 
 		self.uid2TreeKey[uid] = key
 
 		if not rankNotChanged:
 			self.outdateRankMap()
+
+#		if self.size > 0:
+#			assert self.minKey == self.tree.findMinNode().key, (self.size, self.minKey, self.tree.findMinNode().item, list(self.items()))
 
 
 	cpdef bint full(self):
@@ -118,13 +128,14 @@ cdef class RankingList:
 
 	cpdef int getRank(self, object uid) except 0:
 		if self.rankMap is None:
+			self.rankMapMiss += 1
 			self.genRankMap()
+		else:
+			self.rankMapHit += 1
 
 		return self.rankMap[uid]
 	
 	cdef genRankMap(self):
-		print 'genRankMap ...'
-
 		cdef dict rankMap = {}
 		cdef int rank = 1
 		for uid, score, info in self.iteritems():

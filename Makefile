@@ -6,6 +6,7 @@ all:
 
 test: all
 	python test.py
+	python benchGetRank.py
 
 clean:
 	rm -rf build
