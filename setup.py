@@ -12,4 +12,6 @@ for mod in ext_modules:
 setup(
   name = 'pyRankingList',
   ext_modules = ext_modules,
+  packages = ['pyRankingList'],
+  package_dir = {'pyRankingList': 'src'},
 )
