@@ -343,7 +343,7 @@ extern node_t *
 rb_insert(node_t **rootaddr, PyObject *key, PyObject *value, int *is_new_node)
 {
     int new_node = 0;
-    node_t *res;
+    node_t *res = NULL;
 	node_t *root = *rootaddr;
 
 	if (root == NULL) {
@@ -352,6 +352,7 @@ rb_insert(node_t **rootaddr, PyObject *key, PyObject *value, int *is_new_node)
 		new_node = 1;
 		if (root == NULL)
 			return NULL; // got no memory
+		res = root;
 	}
 	else {
 		node_t head; /* False tree root */
@@ -432,6 +433,7 @@ rb_insert(node_t **rootaddr, PyObject *key, PyObject *value, int *is_new_node)
 	(*rootaddr) = root;
 	PARENT_NODE(root) = NULL; 
 	*is_new_node = new_node;
+	assert(res != NULL);
 	return res; 
 }
 

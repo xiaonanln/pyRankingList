@@ -1,11 +1,12 @@
 
-from cython_trees cimport RBTree, TreeNode
+from cython_trees cimport RBTree as TreeImpl
+from cython_trees cimport TreeNode
 
 cdef class RankingList:
 
 	cdef int limit
 	cdef int seq 
-	cdef RBTree tree
+	cdef TreeImpl tree
 	cdef dict rankMap
 	cdef dict uid2TreeKey
 	cdef tuple minKey
@@ -13,14 +14,14 @@ cdef class RankingList:
 
 	def __cinit__(self, int limit=-1):
 		self.seq = 0
-		self.tree = RBTree()
+		self.tree = TreeImpl()
 		self.limit = limit if limit > 0 else -1
 		self.size = 0
 		self.uid2TreeKey = {}
 		self.rankMap = None
 		self.minKey = None
 
-	cpdef void update(self, object uid, object score, object info):
+	cpdef void update(self, object uid, object score, object info) except *:
 		cdef int seq = self.getNextSeq()
 		cdef tuple key = (score, seq)
 		cdef tuple val = (uid, info)
@@ -80,7 +81,7 @@ cdef class RankingList:
 	cpdef bint full(self):
 		return self.limit != -1 and self.size >= self.limit
 
-	cpdef void updateInfo(self, object uid, object newInfo):
+	cpdef void updateInfo(self, object uid, object newInfo) except *:
 		cdef tuple key = self.uid2TreeKey[uid]
 		cdef TreeNode node = self.tree.findNode(key)
 		node.remove()
