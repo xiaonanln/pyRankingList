@@ -33,11 +33,11 @@ def timeNormalCase(N):
 
 if __name__ == '__main__':
 	number = 1
-	stmt = "timeRandomCase(100000)"
+	stmt = "timeRandomCase(1000000)"
 	t = timeit.timeit(stmt, number=number, setup="from __main__ import timeRandomCase")
 	print '%s x %d takes %.3f seconds' % (stmt, number, t)
 
-	stmt = "timeNormalCase(100000)"
+	stmt = "timeNormalCase(1000000)"
 	t = timeit.timeit(stmt, number=number, setup="from __main__ import timeNormalCase")
 	print '%s x %d takes %.3f seconds' % (stmt, number, t)
 

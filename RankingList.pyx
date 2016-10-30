@@ -9,7 +9,7 @@ cdef class RankingList:
 	cdef TreeImpl tree
 	cdef dict rankMap
 	cdef dict uid2TreeKey
-	cdef tuple minKey
+	# cdef tuple minKey
 	cdef readonly int size
 	cdef readonly int rankMapHit, rankMapMiss
 
@@ -20,7 +20,7 @@ cdef class RankingList:
 		self.size = 0
 		self.uid2TreeKey = {}
 		self.rankMap = None
-		self.minKey = None
+		# self.minKey = None
 
 	cpdef void update(self, object uid, object score, object info) except *:
 		# print 'update', uid, score, self.size
@@ -46,7 +46,7 @@ cdef class RankingList:
 
 			self.tree.insert( key,  val )
 
-			if self.minKey is None or key < self.minKey: self.minKey = key
+			# if self.minKey is None or key < self.minKey: self.minKey = key
 
 			rankNotChanged = (prevNode is None or prevNode.key[0] < score) and (succNode is None or succNode.key[0] >= score)
 		else:
@@ -62,22 +62,22 @@ cdef class RankingList:
 					return 
 
 				# assert minItem.key == self.minKey, "min key in tree (%s) should be equal to minKey (%s)" % (minItem.key, self.minKey)
-				nextMinItem = minItem.getSuccNode()
+				# nextMinItem = minItem.getSuccNode()
 				
 				del self.uid2TreeKey[minItem.value[0]]
 				minItem.remove()
 				self.tree.insert(key,  val)
 
-				if nextMinItem is None:
-					self.minKey = key
-				else:
-					self.minKey = nextMinItem.key
-					if key < self.minKey: self.minKey = key
+		#		if nextMinItem is None:
+		#			self.minKey = key
+		#		else:
+		#			self.minKey = nextMinItem.key
+		#			if key < self.minKey: self.minKey = key
 			else:
 				# rank is not full, simply insert the new item
 				self.tree.insert( key,  val )
 				self.size += 1
-				if self.minKey is None or key < self.minKey: self.minKey = key
+				# if self.minKey is None or key < self.minKey: self.minKey = key
 
 		self.uid2TreeKey[uid] = key
 
