@@ -1,7 +1,7 @@
 PYFILES = errors.py __init__.py
 
 all:
-	python setup.py build_ext 
+	python setup.py build_ext --inplace
 
 test: all
 	python test.py
@@ -12,4 +12,4 @@ clean:
 	rm -rf *.so
 	rm -rf *~
 	rm -rf $(patsubst %.pyx,%.c,$(wildcard *.pyx))
-	rm -rf pyRankingList
+	rm -rf pyRankingList/*.so

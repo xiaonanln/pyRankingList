@@ -13,5 +13,5 @@ setup(
   name = 'pyRankingList',
   ext_modules = ext_modules,
   packages = ['pyRankingList'],
-  package_dir = {'pyRankingList': 'src'},
+  package_dir = {'pyRankingList': 'pyRankingList'},
 )
